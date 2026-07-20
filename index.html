@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAFS Onam Sports Fiesta 2026</title>
+<style>
+  :root{
+    --marigold:#ff8c00; --saffron:#ff6a00; --red:#d7263d; --green:#0b7a3b;
+    --gold:#f4b400; --cream:#fff7e6; --ink:#3a2600; --card:#fffdf7;
+    --shadow:0 8px 24px rgba(120,60,0,.15);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);
+    background:#fff3dc;min-height:100vh;}
+  /* blurred full-page Onam background */
+  .bgwrap{position:fixed;inset:0;z-index:-2;overflow:hidden}
+  .bgwrap::before{content:"";position:absolute;inset:-30px;
+    background:url("bg.jpg") center/cover no-repeat;
+    filter:blur(9px) saturate(1.05);transform:scale(1.08)}
+  .bgwrap::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(255,247,230,.55),rgba(255,247,230,.78))}
+  header{text-align:center;padding:26px 16px 14px;position:relative}
+  .cover{max-width:100%;border-radius:16px;box-shadow:var(--shadow);margin:0 auto 14px;display:none}
+  h1{margin:.1em 0;font-size:clamp(24px,5vw,44px);
+     background:linear-gradient(90deg,var(--red),var(--saffron),var(--green));
+     -webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.5px}
+  .sub{font-size:clamp(14px,2.5vw,18px);color:#7a4d00;margin:.2em 0 0}
+  .pookkalam{font-size:30px;letter-spacing:6px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 16px 60px}
+
+  /* top-right Teams & Scores button */
+  #teamsBtn{position:fixed;top:22px;right:18px;z-index:60;background:var(--green);color:#fff;
+    border:none;border-radius:30px;padding:11px 18px;font-weight:800;font-size:15px;cursor:pointer;
+    box-shadow:0 6px 18px rgba(11,122,59,.4);display:flex;align-items:center;gap:8px}
+  #teamsBtn:hover{filter:brightness(1.08)}
+  #teamsBtn .lead{background:rgba(255,255,255,.25);border-radius:14px;padding:1px 8px;font-size:13px}
+
+  .masterqr{display:flex;gap:16px;align-items:center;justify-content:center;
+    background:var(--card);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow);
+    margin:8px auto 22px;max-width:520px;flex-wrap:wrap}
+  .masterqr img{width:108px;height:108px;border-radius:8px;background:#fff}
+  .masterqr .t{text-align:left}
+
+  #liveBanner{display:none;background:linear-gradient(90deg,#d7263d,#ff5252);color:#fff;
+    border-radius:14px;padding:12px 16px;margin:0 0 18px;box-shadow:var(--shadow);
+    animation:pulseBox 1.6s infinite}
+  @keyframes pulseBox{0%,100%{box-shadow:0 0 0 0 rgba(215,38,61,.5)}50%{box-shadow:0 0 0 10px rgba(215,38,61,0)}}
+  #liveBanner .lbl{font-weight:800;display:flex;align-items:center;gap:8px}
+
+  .notices{background:linear-gradient(180deg,#fff4d6,#fff);border:2px solid var(--gold);
+    border-radius:16px;padding:16px 18px;margin:0 0 18px;box-shadow:var(--shadow)}
+  .notices h2{margin:0 0 8px;color:var(--saffron);font-size:20px}
+  .notices ul{margin:6px 0 0;padding-left:20px}
+  .notices li{margin:6px 0;line-height:1.5}
+  .notices .hot{background:#fff0b3;padding:1px 6px;border-radius:6px;font-weight:600}
+
+  .committee{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 22px}
+  .committee .c{flex:1 1 240px;background:var(--green);color:#fff;border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+  .committee .c .role{opacity:.9;font-size:13px}
+  .committee .c .nm{font-size:18px;font-weight:700;margin:2px 0}
+  .committee .c a{color:#fff;text-decoration:none;font-size:20px;font-weight:700;display:inline-block;margin-top:4px;border-bottom:2px dashed rgba(255,255,255,.6)}
+
+  .section-title{display:flex;align-items:center;gap:10px;margin:26px 0 14px;font-size:24px;color:#7a4d00}
+  .section-title::before,.section-title::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .section-title span{white-space:nowrap;font-weight:800}
+  .status{text-align:center;font-size:13px;color:#8a6a2a;margin:-6px 0 16px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px;animation:blink 1.4s infinite}
+  .refresh-btn{background:var(--saffron);color:#fff;border:none;border-radius:20px;padding:6px 16px;font-weight:600;cursor:pointer;margin-left:8px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .ev{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;
+    border-top:5px solid var(--marigold);position:relative;transition:transform .15s;cursor:pointer}
+  .ev:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(120,60,0,.22)}
+  .ev.islive{border-top-color:var(--red);box-shadow:0 0 0 2px rgba(215,38,61,.35),var(--shadow)}
+  .ev .no{position:absolute;top:-12px;left:14px;background:var(--saffron);color:#fff;width:30px;height:30px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:var(--shadow)}
+  .ev h3{margin:6px 0 8px;font-size:19px;padding-right:86px}
+  /* per-activity blinking red LIVE button */
+  .live-btn{position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border:none;
+    font-size:12px;font-weight:800;padding:5px 12px 5px 24px;border-radius:20px;letter-spacing:.5px;
+    box-shadow:0 3px 10px rgba(215,38,61,.5);animation:pulseBtn 1.2s infinite}
+  .live-btn::before{content:"";position:absolute;left:10px;top:50%;transform:translateY(-50%);
+    width:9px;height:9px;border-radius:50%;background:#fff;animation:blink .8s infinite}
+  @keyframes pulseBtn{0%,100%{box-shadow:0 0 0 0 rgba(215,38,61,.55)}50%{box-shadow:0 0 0 8px rgba(215,38,61,0)}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+  .meta{font-size:14px;line-height:1.9}
+  .meta .k{display:inline-block;width:74px;color:#9a7326;font-weight:600}
+  .tag{display:inline-block;background:#ffe8cc;color:#a1560a;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600;margin-top:6px}
+  .pts{color:var(--green);font-weight:700}
+  .winners{margin-top:10px;background:#fff6df;border:1px dashed var(--gold);border-radius:10px;padding:8px 10px}
+  .winners b{color:var(--saffron)}
+  .winners .w{font-size:14px;margin:2px 0}
+  .cardfoot{margin-top:12px;text-align:center;color:var(--saffron);font-weight:700;font-size:13px}
+  .maprow{margin-top:12px;display:flex;gap:12px;align-items:center;background:#eafaef;border-radius:10px;padding:10px}
+  .maprow img{width:78px;height:78px;background:#fff;border-radius:8px}
+  .maprow a{color:var(--green);font-weight:700;text-decoration:none;font-size:14px}
+  .maprow small{display:block;color:#3a6b47}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(40,20,0,.55);z-index:100;display:none;
+    align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto}
+  .overlay.open{display:flex}
+  .modal{background:var(--card);border-radius:18px;max-width:680px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.4);
+    border-top:6px solid var(--saffron);animation:pop .18s ease}
+  @keyframes pop{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+  .modal .mhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:18px 20px 8px}
+  .modal .mhead h2{margin:0;font-size:22px;color:#7a4d00}
+  .modal .mmeta{font-size:14px;color:#9a7326;padding:0 20px;line-height:1.8}
+  .modal .close{background:#eee;border:none;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;flex:none}
+  .modal .body{padding:14px 20px 22px}
+  .rulesbox{background:#fff4d6;border:1px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0 14px;white-space:pre-wrap;line-height:1.6}
+  .rulesbox b{color:var(--saffron)}
+  .live-inline{display:inline-block;background:var(--red);color:#fff;font-size:12px;font-weight:800;
+    padding:4px 11px 4px 22px;border-radius:20px;position:relative;margin-left:8px;vertical-align:middle}
+  .live-inline::before{content:"";position:absolute;left:9px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#fff;animation:blink .8s infinite}
+  table.sc{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  table.sc th{background:var(--green);color:#fff;padding:11px;text-align:left;font-size:14px}
+  table.sc td{padding:10px 11px;border-bottom:1px solid #f0e2c2;font-size:14px}
+  table.sc tr:last-child td{border-bottom:none}
+  table.sc .rank{font-weight:800;color:var(--saffron)}
+  table.sc .score{font-weight:800;color:var(--green)}
+  .empty{color:#a07a3a;text-align:center;padding:22px;font-style:italic}
+
+  footer{text-align:center;color:#a07a3a;font-size:13px;margin-top:34px}
+</style>
+</head>
+<body>
+<div class="bgwrap"></div>
+
+
+<button id="teamsBtn" onclick="openTeams()">🏆 Teams &amp; Scores<span class="lead" id="leadPill"></span></button>
+
+<header>
+  <h1>CAFS Onam Sports Fiesta 2026</h1>
+  <p class="sub">Happy Onam! · Games · Fun · Team Spirit</p>
+</header>
+
+<div class="wrap">
+  <div class="masterqr">
+    <img id="pageQr" alt="Scan for this page">
+    <div class="t"><b>📱 Scan to open this page</b><br>
+      <span style="font-size:13px;color:#8a6a2a">Share this QR with all members</span></div>
+  </div>
+
+  <div id="liveBanner">
+    <div class="lbl">🔴 LIVE NOW</div>
+    <div id="liveList" style="margin-top:4px"></div>
+  </div>
+
+  <div class="notices">
+    <h2>📢 Important Notices</h2>
+    <ul>
+      <li>All events (except Onion peeling) will be conducted during the <span class="hot">afternoon session, from 3 PM onwards</span>.</li>
+      <li><span class="hot">Onion peeling</span> will be conducted by <b>11 AM</b>.</li>
+      <li><b>Badminton</b> alone is conducted <b>outside CAFS premises</b> — at <b>Malu's Smash Indoor court, Josepuram</b> (Timing 2 PM – 6 PM). Scan the location QR on the Badminton card.</li>
+      <li>Team Captains &amp; Vice Captains can co-ordinate with the Sports Committee below.</li>
+    </ul>
+  </div>
+
+  <div class="committee">
+    <div class="c"><div class="role">Sports Coordinator · Engineering Dept</div>
+      <div class="nm">Mr. Anu Asok</div><a href="tel:7012041423">📞 7012041423</a></div>
+    <div class="c"><div class="role">Joint Coordinator · F&amp;B Service</div>
+      <div class="nm">Mr. Manu B</div><a href="tel:8714110477">📞 8714110477</a></div>
+  </div>
+
+  <div class="section-title"><span>🏆 Event Schedule</span></div>
+  <div class="status"><span class="dot"></span><span id="statusText">Loading…</span>
+    <button class="refresh-btn" onclick="loadAll()">Refresh</button></div>
+  <div style="text-align:center;color:#a07a3a;font-size:13px;margin:-8px 0 14px">👆 Tap any event to see its rules, team members &amp; scorecard</div>
+  <div class="grid" id="eventGrid"></div>
+
+  <footer>🌼 Onam Sports Fiesta 2026 · CAFS · Made with team spirit 🌼<br>
+    <small id="lastUpdated"></small></footer>
+</div>
+
+<!-- reusable modal -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mhead">
+      <h2 id="mTitle"></h2>
+      <button class="close" onclick="closeModal()">×</button>
+    </div>
+    <div class="mmeta" id="mMeta"></div>
+    <div class="body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG — paste your Google Sheet ID to go LIVE. Leave "" for preview.
+   Sheet must be shared "Anyone with the link -> Viewer".
+   Tabs: Events, Teams & Scores, and one scorecard tab per game (SC01..SC24,
+   named in the ScoreTab column of Events).
+   ===================================================================== */
+const CONFIG = {
+  SHEET_ID: "",
+  EVENTS_TAB: "Events",
+  TEAMS_TAB:  "Teams & Scores",
+  REFRESH_SECONDS: 30
+};
+
+/* ---------- sample data for preview (SHEET_ID empty) ---------- */
+const EV_HEADERS=["Sl No","Date","Day","Time","Events","Participation model","Participants","Venue","MapLink","Points- 1st, 2nd, 3rd","Live","Winner1","Winner2","Winner3","ScoreTab","Rules"];
+const SAMPLE_EVENTS=[
+ ["1","28-07-2026","Tuesday","2:00 PM - 6:00 PM","Badminton","Group - No preference","2 per team","Malu's Smash Indoor court, Josepuram (External)","https://maps.app.goo.gl/vwEnpm7Vy5g1g4JL8","10, 6, 4","Live","","","","SC01","Best of 3 games. 21 points per game. Standard BWF rules apply."],
+ ["2","29-07-2026","Wednesday","3:00 PM onwards","Carroms","Group - No preference","2 per team","CAFS Indoor","","5, 3, 2","","","","","SC02","Doubles. First to 25 points or highest at time limit."],
+ ["3","30-07-2026","Thursday","3:00 PM onwards","Surpise event","Group - No preference","2 per team","CAFS Indoor","","5, 3, 2","","","","","SC03",""],
+ ["4","31-07-2026","Friday","3:00 PM onwards","Treasure hunt","Group - No preference","2 per team","CAFS Premises","","5, 3, 2","","","","","SC04",""],
+ ["5","03-08-2026","Monday","3:00 PM onwards","Cycle slow race","Individual - Gents","2 per team","CAFS Outdoor","","5, 3, 2","","","","","SC05",""],
+ ["6","04-08-2026","Tuesday","3:00 PM onwards","IPL Fantasy league","Group - No preference","4 per team","CAFS Indoor","","10, 6, 4","","","","","SC06",""],
+ ["7","05-08-2026","Wednesday","3:00 PM onwards","Coconut race","Individual - Gents","2 per team","CAFS Outdoor","","5, 3, 2","","","","","SC07",""],
+ ["8","05-08-2026","Wednesday","3:00 PM onwards","Raise the ball","Group - No preference","5 per team","CAFS Outdoor","","5, 3, 2","","","","","SC08",""],
+ ["9","06-08-2026","Thursday","3:00 PM onwards","Kulam Kara","Individual - Ladies","2 per team","CAFS Outdoor","","5, 3, 2","","","","","SC09",""],
+ ["10","06-08-2026","Thursday","3:00 PM onwards","Fill the bottle","Individual - Ladies","2 per team","CAFS Outdoor","","5, 3, 2","","","","","SC10",""],
+ ["11","07-08-2026","Friday","3:00 PM onwards","Fruit carving","Group - 1 Gent + 1 lady","2 per team","CAFS Indoor","","5, 3, 2","","","","","SC11",""],
+ ["12","08-08-2026","Saturday","3:00 PM onwards","3s Football QFs + SFs","Group - Gents","3 per team","CAFS Outdoor","","10, 6, 4","","","","","SC12",""],
+ ["13","10-08-2026","Monday","3:00 PM onwards","Shoot out competition","Individual - Ladies","2 per team","CAFS Outdoor","","5, 3, 2","","","","","SC13",""],
+ ["14","10-08-2026","Monday","3:00 PM onwards","3s Football Final + L.finals","Group - Gents","3 per team","CAFS Outdoor","","10, 6, 4","","","","","SC14",""],
+ ["15","11-08-2026","Tuesday","3:00 PM onwards","Tug of war","Group - Gents","7 per team","CAFS Outdoor","","10, 6, 4","","","","","SC15",""],
+ ["16","11-08-2026","Tuesday","3:00 PM onwards","Tug of war","Group - Ladies","7 per team","CAFS Outdoor","","10, 6, 4","","","","","SC16",""],
+ ["17","12-08-2026","Wednesday","3:00 PM onwards","Uriyadi","Individual - 1 Gent & 1 lady","2 per team","CAFS Outdoor","","5, 3, 2","","","","","SC17",""],
+ ["18","13-08-2026","Thursday","3:00 PM onwards","The Perfect slice","Individual - 1 Gent & 1 lady","2 per team","CAFS Indoor","","5, 3, 2","","","","","SC18",""],
+ ["19","13-08-2026","Thursday","3:00 PM onwards","Musical chair","Group - Ladies","3 per team","CAFS Indoor","","5, 3, 2","","","","","SC19",""],
+ ["20","14-08-2026","Friday","3:00 PM onwards","Balloon the pyramid","Individual - 1 Gent & 1 lady","2 per team","CAFS Indoor","","5, 3, 2","","","","","SC20",""],
+ ["21","14-08-2026","Friday","11:00 AM","Onion peeling","Individual - No preference","2 per team","CAFS Indoor","","5, 3, 2","","","","","SC21",""],
+ ["22","17-08-2026","Monday","3:00 PM onwards","Quiz challenge","Individual - No preference","2 per team","CAFS Indoor","","5, 3, 2","","","","","SC22",""],
+ ["23","19-08-2026","Wednesday","3:00 PM onwards","Pookkalam","Group - No preference","6 per team","CAFS Indoor","","10, 6, 4","","","","","SC23",""],
+ ["24","19-08-2026","Wednesday","3:00 PM onwards","Photography","Individual - No preference","2 per team","CAFS Premises","","5, 3, 2","","","","","SC24",""]
+];
+const TEAM_HEADERS=["Team","Captain","Vice Captain","Total Points"];
+const SAMPLE_TEAMS=[["Team A","Arun","Vishnu","28"],["Team B","Manu","Kiran","22"],["Team C","Deepa","Meera","19"],["Team D","Roy","Sanjay","15"]];
+const SAMPLE_SC={headers:["Team","Members","Score","Rank"],rows:[["Team A","Arun, Vishnu","2","1"],["Team B","Manu, Kiran","1","2"],["Team C","Deepa, Meera","0","3"]]};
+
+/* ---------- helpers ---------- */
+function qr(d,s){ return "https://api.qrserver.com/v1/create-qr-code/?size="+s+"x"+s+"&data="+encodeURIComponent(d); }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function idx(h,n){ return h.findIndex(x=>String(x).trim().toLowerCase()===n.toLowerCase()); }
+async function fetchTab(tab){
+  const url="https://docs.google.com/spreadsheets/d/"+CONFIG.SHEET_ID+
+    "/gviz/tq?tqx=out:json&headers=1&sheet="+encodeURIComponent(tab)+"&t="+Date.now();
+  const txt=await (await fetch(url)).text();
+  const j=JSON.parse(txt.substring(txt.indexOf("{"),txt.lastIndexOf("}")+1));
+  const headers=j.table.cols.map(c=>c.label||"");
+  const rows=j.table.rows.map(r=>r.c.map(c=>c?(c.f!=null?c.f:c.v):""));
+  return {headers,rows};
+}
+
+let EVENTS=[], lastTeams={headers:TEAM_HEADERS,rows:[]}, scCache={};
+let openState={type:null,no:null};
+
+async function loadAll(){
+  const st=document.getElementById("statusText");
+  try{
+    let ev, teams, live;
+    if(!CONFIG.SHEET_ID){ ev={headers:EV_HEADERS,rows:SAMPLE_EVENTS}; teams={headers:TEAM_HEADERS,rows:SAMPLE_TEAMS}; live=false; }
+    else { [ev,teams]=await Promise.all([fetchTab(CONFIG.EVENTS_TAB),fetchTab(CONFIG.TEAMS_TAB)]); live=true; }
+    parseEvents(ev.headers,ev.rows);
+    lastTeams=teams;
+    renderEvents();
+    updateLeadPill();
+    const now=new Date();
+    st.textContent=(live?"Live from Google Sheet · ":"Preview (sample data) · ")+"updated "+now.toLocaleTimeString();
+    document.getElementById("lastUpdated").textContent="Last refreshed: "+now.toLocaleString();
+    scCache={}; // clear so open scorecard re-fetches fresh
+    refreshOpenModal();
+  }catch(e){ st.textContent="Could not load data — check Sheet ID / sharing. Retrying…"; console.error(e); }
+}
+
+function parseEvents(h,rows){
+  const c={no:idx(h,"Sl No"),date:idx(h,"Date"),day:idx(h,"Day"),time:idx(h,"Time"),ev:idx(h,"Events"),
+    pm:idx(h,"Participation model"),pt:idx(h,"Participants"),ven:idx(h,"Venue"),map:idx(h,"MapLink"),
+    pts:idx(h,"Points- 1st, 2nd, 3rd"),live:idx(h,"Live"),w1:idx(h,"Winner1"),w2:idx(h,"Winner2"),
+    w3:idx(h,"Winner3"),sc:idx(h,"ScoreTab"),ru:idx(h,"Rules")};
+  const g=(r,i)=>i>=0&&r[i]!=null?String(r[i]).trim():"";
+  EVENTS=rows.filter(r=>g(r,c.ev)).map(r=>({
+    no:g(r,c.no),date:g(r,c.date),day:g(r,c.day),time:g(r,c.time),ev:g(r,c.ev),pm:g(r,c.pm),
+    pt:g(r,c.pt),ven:g(r,c.ven),map:g(r,c.map),pts:g(r,c.pts),
+    live:g(r,c.live).toLowerCase()==="live",w1:g(r,c.w1),w2:g(r,c.w2),w3:g(r,c.w3),
+    scoreTab:g(r,c.sc),rules:g(r,c.ru)
+  }));
+}
+
+function renderEvents(){
+  const grid=document.getElementById("eventGrid"); grid.innerHTML="";
+  const liveNames=[];
+  EVENTS.forEach(e=>{
+    if(e.live) liveNames.push(e.ev);
+    const hasWin=e.w1||e.w2||e.w3;
+    let h='<div class="ev'+(e.live?" islive":"")+'" onclick="openScorecard(\''+esc(e.no)+'\')">';
+    h+='<span class="no">'+esc(e.no)+'</span>';
+    if(e.live) h+='<span class="live-btn">LIVE</span>';
+    h+='<h3>'+esc(e.ev)+'</h3><div class="meta">';
+    h+='<div><span class="k">📅 Date</span> '+esc(e.date)+' ('+esc(e.day)+')</div>';
+    h+='<div><span class="k">⏰ Time</span> '+esc(e.time)+'</div>';
+    h+='<div><span class="k">📍 Venue</span> '+esc(e.ven)+'</div>';
+    h+='<div><span class="k">👥 Team</span> '+esc(e.pt)+'</div>';
+    h+='<div><span class="k">🏅 Points</span> <span class="pts">'+esc(e.pts)+'</span></div></div>';
+    h+='<div class="tag">'+esc(e.pm)+'</div>';
+    if(hasWin){ h+='<div class="winners"><b>🏆 Winners</b>';
+      if(e.w1)h+='<div class="w">🥇 '+esc(e.w1)+'</div>';
+      if(e.w2)h+='<div class="w">🥈 '+esc(e.w2)+'</div>';
+      if(e.w3)h+='<div class="w">🥉 '+esc(e.w3)+'</div>'; h+='</div>'; }
+    if(e.map){ h+='<div class="maprow" onclick="event.stopPropagation()"><img src="'+qr(e.map,160)+'" alt="Location QR">'+
+      '<div><a href="'+esc(e.map)+'" target="_blank" rel="noopener">🗺️ Open location in Maps</a>'+
+      '<small>Scan the QR to navigate to the venue</small></div></div>'; }
+    h+='<div class="cardfoot">📋 Tap for rules &amp; scorecard →</div></div>';
+    grid.insertAdjacentHTML("beforeend",h);
+  });
+  const lb=document.getElementById("liveBanner");
+  if(liveNames.length){ lb.style.display="block"; document.getElementById("liveList").innerHTML=liveNames.map(esc).join(" &nbsp;•&nbsp; "); }
+  else lb.style.display="none";
+}
+
+function updateLeadPill(){
+  const c={t:idx(lastTeams.headers,"Team"),sc:idx(lastTeams.headers,"Total Points")};
+  const arr=lastTeams.rows.filter(r=>r[c.t]&&String(r[c.t]).trim())
+    .map(r=>({team:r[c.t],score:parseFloat(r[c.sc])||0})).sort((a,b)=>b.score-a.score);
+  document.getElementById("leadPill").textContent = arr.length && arr[0].score>0 ? "🥇 "+arr[0].team : "";
+}
+
+/* ---------- modals ---------- */
+function closeModal(){ document.getElementById("overlay").classList.remove("open"); openState={type:null,no:null}; }
+function refreshOpenModal(){
+  if(openState.type==="teams") renderTeamsModal();
+  else if(openState.type==="score") openScorecard(openState.no,true);
+}
+
+function openTeams(){
+  openState={type:"teams",no:null};
+  renderTeamsModal();
+  document.getElementById("overlay").classList.add("open");
+}
+function renderTeamsModal(){
+  document.getElementById("mTitle").textContent="🏆 Teams & Scores";
+  document.getElementById("mMeta").innerHTML="Overall standings · updates live from the sheet";
+  const c={t:idx(lastTeams.headers,"Team"),cap:idx(lastTeams.headers,"Captain"),
+    vc:idx(lastTeams.headers,"Vice Captain"),sc:idx(lastTeams.headers,"Total Points")};
+  const arr=lastTeams.rows.filter(r=>r[c.t]&&String(r[c.t]).trim())
+    .map(r=>({team:r[c.t],cap:r[c.cap]||"",vc:r[c.vc]||"",raw:r[c.sc],score:parseFloat(r[c.sc])||0}))
+    .sort((a,b)=>b.score-a.score);
+  const m=["🥇","🥈","🥉"];
+  let h='<table class="sc"><thead><tr><th>#</th><th>Team</th><th>Captain</th><th>Vice Captain</th><th>Points</th></tr></thead><tbody>';
+  arr.forEach((t,i)=>{ h+='<tr><td class="rank">'+(m[i]||(i+1))+'</td><td><b>'+esc(t.team)+'</b></td><td>'+esc(t.cap)+'</td><td>'+esc(t.vc)+'</td><td class="score">'+esc(t.raw!=null&&String(t.raw).trim()!==""?t.raw:0)+'</td></tr>'; });
+  h+='</tbody></table>';
+  document.getElementById("mBody").innerHTML=h;
+}
+
+async function openScorecard(no,isRefresh){
+  const e=EVENTS.find(x=>x.no==no); if(!e) return;
+  openState={type:"score",no:no};
+  document.getElementById("mTitle").innerHTML=esc(e.ev)+(e.live?'<span class="live-inline">LIVE</span>':'');
+  document.getElementById("mMeta").innerHTML=
+    '📅 '+esc(e.date)+' ('+esc(e.day)+') &nbsp; ⏰ '+esc(e.time)+'<br>📍 '+esc(e.ven)+
+    ' &nbsp; 🏅 '+esc(e.pts)+' &nbsp; 👥 '+esc(e.pt);
+  const body=document.getElementById("mBody");
+  let head="";
+  if(e.rules) head+='<div class="rulesbox"><b>📋 Rules</b><br>'+esc(e.rules)+'</div>';
+  if(!isRefresh) body.innerHTML=head+'<div class="empty">Loading scorecard…</div>';
+  document.getElementById("overlay").classList.add("open");
+
+  // fetch scorecard tab
+  let data;
+  if(!CONFIG.SHEET_ID){ data=SAMPLE_SC; }
+  else if(!e.scoreTab){ body.innerHTML=head+'<div class="empty">Detailed scorecard will be available soon.</div>'; return; }
+  else {
+    try{
+      if(scCache[e.scoreTab]) data=scCache[e.scoreTab];
+      else { data=await fetchTab(e.scoreTab); scCache[e.scoreTab]=data; }
+    }catch(err){ body.innerHTML=head+'<div class="empty">Scorecard sheet not found ('+esc(e.scoreTab)+').</div>'; return; }
+  }
+  if(openState.type!=="score"||openState.no!=no) return; // modal changed while loading
+  body.innerHTML=head+renderScTable(data);
+}
+
+function renderScTable(d){
+  // skip a leading title row (single non-empty first cell) if present
+  let rows=d.rows.filter(r=>r.some(c=>String(c).trim()!==""));
+  if(!rows.length) return '<div class="empty">No scores entered yet.</div>';
+  const scIdx=d.headers.findIndex(h=>/score/i.test(h));
+  const rkIdx=d.headers.findIndex(h=>/rank/i.test(h));
+  let h='<table class="sc"><thead><tr>';
+  d.headers.forEach(hd=>h+='<th>'+esc(hd)+'</th>'); h+='</tr></thead><tbody>';
+  rows.forEach(r=>{ h+='<tr>';
+    d.headers.forEach((hd,i)=>{ const cls=i===scIdx?' class="score"':(i===rkIdx?' class="rank"':''); h+='<td'+cls+'>'+esc(r[i])+'</td>'; });
+    h+='</tr>'; });
+  h+='</tbody></table>';
+  return h;
+}
+
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+document.getElementById("pageQr").src=qr(location.href,200);
+loadAll();
+setInterval(loadAll, CONFIG.REFRESH_SECONDS*1000);
+</script>
+</body>
+</html>
