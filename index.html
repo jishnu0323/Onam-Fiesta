@@ -130,6 +130,8 @@
   .partsec{margin-top:18px}
   .parthd{font-weight:800;color:#7a4d00;margin-bottom:6px;font-size:16px}
   .pcount{background:#fff0b3;color:#a1560a;border-radius:14px;padding:1px 9px;font-size:13px;margin-left:6px}
+  .pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700}
+  .pill.done{background:#e6f7ec;color:#0b7a3b} .pill.sched{background:#fff0b3;color:#a1560a}
 
   footer{text-align:center;color:#a07a3a;font-size:13px;margin-top:34px}
 
@@ -226,6 +228,7 @@ const CONFIG = {
   EVENTS_TAB: "Events",
   TEAMS_TAB:  "Teams & Scores",
   PARTICIPANTS_TAB: "Participants",
+  MATCHES_TAB: "Matches",
   REFRESH_SECONDS: 30
 };
 
@@ -265,6 +268,20 @@ const SAMPLE_PARTS=[
  {event:"Carroms",name:"Deepa & Meera",dept:"HR",phone:"",team:"Team C"},
  {event:"Tug of War - Men",name:"Roy (Captain) + 6",dept:"Operations",phone:"",team:"Team A"}
 ];
+/* shared local demo DB (same key/shape as register.html) */
+const DB_KEY="onam_db";
+const SEED={
+  teams:[{name:"Team A",cap:"Arun",vc:"Vishnu",points:28},{name:"Team B",cap:"Manu",vc:"Kiran",points:22},
+         {name:"Team C",cap:"Deepa",vc:"Meera",points:19},{name:"Team D",cap:"Roy",vc:"Sanjay",points:15}],
+  participants:SAMPLE_PARTS.map((p,i)=>Object.assign({id:"P"+(i+1),gender:"",notes:"",addedBy:"seed",ts:""},p)),
+  matches:[
+    {id:"M1",event:"Badminton",teamA:"Team A",teamB:"Team B",status:"Live",scoreA:"1",scoreB:"0",winner:"",note:""},
+    {id:"M2",event:"Carroms",teamA:"Team C",teamB:"Team D",status:"Done",scoreA:"25",scoreB:"18",winner:"Team C",note:""}
+  ]
+};
+function dbLoad(){ try{ return JSON.parse(localStorage.getItem(DB_KEY)); }catch(e){ return null; } }
+function dbEnsure(){ let db=dbLoad(); if(!db){ db=JSON.parse(JSON.stringify(SEED)); localStorage.setItem(DB_KEY,JSON.stringify(db)); }
+  db.teams=db.teams||[]; db.participants=db.participants||[]; db.matches=db.matches||[]; return db; }
 const SAMPLE_SC={headers:["Team","Members","Score","Rank"],rows:[["Team A","Arun, Vishnu","2","1"],["Team B","Manu, Kiran","1","2"],["Team C","Deepa, Meera","0","3"]]};
 
 /* ---------- helpers ---------- */
@@ -290,7 +307,7 @@ async function fetchTab(tab){
   return {headers,rows};
 }
 
-let EVENTS=[], lastTeams={headers:TEAM_HEADERS,rows:[]}, scCache={}, PARTS={};
+let EVENTS=[], lastTeams={headers:TEAM_HEADERS,rows:[]}, scCache={}, PARTS={}, MATCHES=[];
 let openState={type:null,no:null};
 
 function groupParts(list){ const m={}; list.forEach(p=>{ (m[p.event]=m[p.event]||[]).push(p); }); return m; }
@@ -300,15 +317,28 @@ function partsFromTab(p){
   const list=p.rows.filter(r=>g(r,c.ev)&&g(r,c.nm)).map(r=>({event:g(r,c.ev),name:g(r,c.nm),dept:g(r,c.dp),phone:g(r,c.ph),team:g(r,c.tm)}));
   return groupParts(list);
 }
+function matchesFromTab(p){
+  const c={id:idx(p.headers,"ID"),ev:idx(p.headers,"Event"),a:idx(p.headers,"TeamA"),b:idx(p.headers,"TeamB"),
+    st:idx(p.headers,"Status"),sa:idx(p.headers,"ScoreA"),sb:idx(p.headers,"ScoreB"),w:idx(p.headers,"Winner")};
+  const g=(r,i)=>i>=0&&r[i]!=null?String(r[i]).trim():"";
+  return p.rows.filter(r=>g(r,c.ev)&&g(r,c.a)).map(r=>({id:g(r,c.id),event:g(r,c.ev),teamA:g(r,c.a),teamB:g(r,c.b),
+    status:g(r,c.st)||"Scheduled",scoreA:g(r,c.sa),scoreB:g(r,c.sb),winner:g(r,c.w)}));
+}
 
 async function loadAll(){
   const st=document.getElementById("statusText");
   try{
     let ev, teams, live;
-    if(!CONFIG.SHEET_ID){ ev={headers:EV_HEADERS,rows:SAMPLE_EVENTS}; teams={headers:TEAM_HEADERS,rows:SAMPLE_TEAMS}; live=false; PARTS=groupParts(SAMPLE_PARTS); }
+    if(!CONFIG.SHEET_ID){
+      ev={headers:EV_HEADERS,rows:SAMPLE_EVENTS};
+      const db=dbEnsure();
+      teams={headers:TEAM_HEADERS,rows:db.teams.map(t=>[t.name,t.cap||"",t.vc||"",String(t.points!=null?t.points:0)])};
+      PARTS=groupParts(db.participants); MATCHES=db.matches||[]; live=false;
+    }
     else {
       [ev,teams]=await Promise.all([fetchTab(CONFIG.EVENTS_TAB),fetchTab(CONFIG.TEAMS_TAB)]); live=true;
       try{ PARTS=partsFromTab(await fetchTab(CONFIG.PARTICIPANTS_TAB)); }catch(e){ PARTS={}; }
+      try{ MATCHES=matchesFromTab(await fetchTab(CONFIG.MATCHES_TAB)); }catch(e){ MATCHES=[]; }
     }
     parseEvents(ev.headers,ev.rows);
     lastTeams=teams;
@@ -340,11 +370,12 @@ function renderEvents(){
   const grid=document.getElementById("eventGrid"); grid.innerHTML="";
   const liveNames=[];
   EVENTS.forEach(e=>{
-    if(e.live) liveNames.push(e.ev);
+    const evLive = e.live || MATCHES.some(m=>m.event===e.ev && String(m.status).toLowerCase()==='live');
+    if(evLive) liveNames.push(e.ev);
     const hasWin=e.w1||e.w2||e.w3;
-    let h='<div class="ev'+(e.live?" islive":"")+'" onclick="openScorecard(\''+esc(e.no)+'\')">';
+    let h='<div class="ev'+(evLive?" islive":"")+'" onclick="openScorecard(\''+esc(e.no)+'\')">';
     h+='<span class="no">'+esc(e.no)+'</span>';
-    if(e.live) h+='<span class="live-btn">LIVE</span>';
+    if(evLive) h+='<span class="live-btn">LIVE</span>';
     h+='<h3>'+esc(e.ev)+'</h3><div class="meta">';
     h+='<div><span class="k">📅 Date</span> '+esc(e.date)+' ('+esc(e.day)+')</div>';
     h+='<div><span class="k">⏰ Time</span> '+esc(e.time)+'</div>';
@@ -364,7 +395,12 @@ function renderEvents(){
     grid.insertAdjacentHTML("beforeend",h);
   });
   const lb=document.getElementById("liveBanner");
-  if(liveNames.length){ lb.style.display="block"; document.getElementById("liveList").innerHTML=liveNames.map(esc).join(" &nbsp;•&nbsp; "); }
+  const liveMatches=MATCHES.filter(m=>String(m.status).toLowerCase()==='live');
+  const items=[];
+  liveNames.forEach(n=>{ const lm=liveMatches.filter(m=>m.event===n);
+    if(lm.length) lm.forEach(m=>items.push('<b>'+esc(n)+':</b> '+esc(m.teamA)+' vs '+esc(m.teamB)));
+    else items.push('<b>'+esc(n)+'</b>'); });
+  if(items.length){ lb.style.display="block"; document.getElementById("liveList").innerHTML=items.join(" &nbsp;•&nbsp; "); }
   else lb.style.display="none";
 }
 
@@ -411,22 +447,38 @@ async function openScorecard(no,isRefresh){
     ' &nbsp; 🏅 '+esc(e.pts)+' &nbsp; 👥 '+esc(e.pt);
   const body=document.getElementById("mBody");
   let head="";
-  if(e.rules) head+='<div class="rulesbox"><b>📋 Rules</b><br>'+esc(e.rules)+'</div>';
+  const ruleText=e.rules||"Will be announced before the game by the Sports Co-ordinator.";
+  head+='<div class="rulesbox"><b>📋 Rules</b><br>'+esc(ruleText)+'</div>';
   if(!isRefresh) body.innerHTML=head+'<div class="empty">Loading scorecard…</div>';
   document.getElementById("overlay").classList.add("open");
 
   // fetch scorecard tab
   let data;
   if(!CONFIG.SHEET_ID){ data=SAMPLE_SC; }
-  else if(!e.scoreTab){ body.innerHTML=head+'<div class="empty">Detailed scorecard will be available soon.</div>'+renderParts(e.ev); return; }
+  else if(!e.scoreTab){ body.innerHTML=head+renderMatches(e.ev)+renderParts(e.ev); return; }
   else {
     try{
       if(scCache[e.scoreTab]) data=scCache[e.scoreTab];
       else { data=await fetchTab(e.scoreTab); scCache[e.scoreTab]=data; }
-    }catch(err){ body.innerHTML=head+'<div class="empty">Scorecard sheet not found ('+esc(e.scoreTab)+').</div>'+renderParts(e.ev); return; }
+    }catch(err){ body.innerHTML=head+renderMatches(e.ev)+renderParts(e.ev); return; }
   }
   if(openState.type!=="score"||openState.no!=no) return; // modal changed while loading
-  body.innerHTML=head+renderScTable(data)+renderParts(e.ev);
+  body.innerHTML=head+renderMatches(e.ev)+renderScTable(data)+renderParts(e.ev);
+}
+
+function renderMatches(ev){
+  const list=MATCHES.filter(m=>m.event===ev);
+  let h='<div class="partsec"><div class="parthd">⚔️ Matches &amp; Results <span class="pcount">'+list.length+'</span></div>';
+  if(!list.length){ return h+'<div class="empty">No matches scheduled yet.</div></div>'; }
+  h+='<table class="sc"><thead><tr><th>Match</th><th>Score</th><th>Status</th><th>Winner</th></tr></thead><tbody>';
+  list.forEach(m=>{
+    const st=String(m.status||'Scheduled').toLowerCase();
+    const tag = st==='live'?'<span class="live-inline">LIVE</span>' : st==='done'?'<span class="pill done">Done</span>' : '<span class="pill sched">Scheduled</span>';
+    const sc=(String(m.scoreA)!==''||String(m.scoreB)!=='')?esc(m.scoreA||'0')+' : '+esc(m.scoreB||'0'):'—';
+    h+='<tr><td><b>'+esc(m.teamA)+'</b> vs <b>'+esc(m.teamB)+'</b></td><td>'+sc+'</td><td>'+tag+'</td><td>'+(m.winner?'🏆 '+esc(m.winner):'—')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  return h;
 }
 
 function renderParts(ev){
@@ -455,6 +507,7 @@ function renderScTable(d){
 }
 
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+window.addEventListener("storage",e=>{ if(e.key===DB_KEY) loadAll(); });  // live sync from admin page (demo mode)
 document.getElementById("pageQr").src=qr(location.href,200);
 loadAll();
 setInterval(loadAll, CONFIG.REFRESH_SECONDS*1000);
