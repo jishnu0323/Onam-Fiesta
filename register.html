@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onam 2026 · Admin Registration</title>
+<style>
+  :root{--saffron:#ff6a00;--green:#0b7a3b;--red:#d7263d;--gold:#f4b400;--ink:#3a2600;--card:#fffdf7}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);
+    background:linear-gradient(180deg,#fff3dc,#fff);min-height:100vh}
+  .bar{background:var(--green);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+  .bar b{font-size:18px}
+  .bar .who{font-size:13px;opacity:.9}
+  .bar button{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600}
+  .wrap{max-width:900px;margin:0 auto;padding:18px}
+  .card{background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(120,60,0,.15);padding:20px;margin-bottom:18px}
+  h1{color:var(--saffron);margin:.2em 0}
+  label{display:block;font-size:13px;font-weight:600;color:#9a7326;margin:10px 0 4px}
+  input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid #e6d3a8;border-radius:10px;font-size:15px;background:#fff}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--saffron)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1 1 200px}
+  .btn{background:var(--saffron);color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:16px;font-weight:700;cursor:pointer;margin-top:14px}
+  .btn:hover{filter:brightness(1.08)} .btn:active{transform:scale(.98)}
+  .btn.green{background:var(--green)}
+  .msg{margin-top:12px;padding:10px 14px;border-radius:10px;font-weight:600;display:none}
+  .msg.ok{background:#e6f7ec;color:#0b7a3b;display:block}
+  .msg.err{background:#fde8ea;color:#d7263d;display:block}
+  .login{max-width:380px;margin:8vh auto}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+  th{background:var(--green);color:#fff;padding:9px;text-align:left;position:sticky;top:0}
+  td{padding:8px 9px;border-bottom:1px solid #f0e2c2}
+  .del{background:var(--red);color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px}
+  .filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+  .count{background:#fff0b3;color:#a1560a;border-radius:20px;padding:3px 12px;font-weight:700;font-size:13px}
+  .tablewrap{max-height:60vh;overflow:auto;border-radius:10px}
+  .hint{font-size:12px;color:#a07a3a;margin-top:4px}
+  #loginView,#appView{display:none}
+</style>
+</head>
+<body>
+
+<div id="loginView">
+  <div class="card login">
+    <h1>🔐 Admin Login</h1>
+    <p style="color:#8a6a2a;font-size:14px">CAFS Onam 2026 · Participant registration</p>
+    <label>Username</label>
+    <input id="u" autocomplete="username" placeholder="admin">
+    <label>Password</label>
+    <input id="p" type="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn" style="width:100%" onclick="login()">Log in</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<div id="appView">
+  <div class="bar">
+    <b>🌼 Onam 2026 · Registration</b>
+    <div><span class="who" id="whoLabel"></span> &nbsp; <button onclick="logout()">Log out</button></div>
+  </div>
+  <div class="wrap">
+
+    <div class="card">
+      <h1>➕ Add Participant</h1>
+      <div class="row">
+        <div>
+          <label>Event *</label>
+          <select id="f_event"></select>
+        </div>
+        <div>
+          <label>Team</label>
+          <select id="f_team">
+            <option value="">— select —</option>
+            <option>Team A</option><option>Team B</option><option>Team C</option><option>Team D</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Participant name(s) *</label>
+          <input id="f_name" placeholder="e.g. Arun Kumar (or 'Arun & Vishnu' for pairs)">
+        </div>
+        <div>
+          <label>Department</label>
+          <input id="f_dept" placeholder="e.g. Engineering">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Phone</label>
+          <input id="f_phone" inputmode="tel" placeholder="10-digit number">
+        </div>
+        <div>
+          <label>Gender</label>
+          <select id="f_gender">
+            <option value="">— n/a —</option><option>Gents</option><option>Ladies</option>
+          </select>
+        </div>
+      </div>
+      <label>Notes</label>
+      <input id="f_notes" placeholder="optional">
+      <button class="btn" onclick="addParticipant()">Save participant</button>
+      <div class="msg" id="addMsg"></div>
+      <div class="hint">Tip: for a team/pair event, add one row per entry (put both names in the name field, or add separate rows).</div>
+    </div>
+
+    <div class="card">
+      <div class="filterbar">
+        <h1 style="margin:0;flex:1">📋 Registrations</h1>
+        <span class="count" id="totalCount">0</span>
+        <button class="btn green" style="margin:0;padding:8px 14px" onclick="loadList()">Refresh</button>
+      </div>
+      <div class="filterbar">
+        <input id="search" placeholder="🔍 search name / dept / phone…" oninput="renderList()" style="flex:2 1 240px">
+        <select id="filterEvent" onchange="renderList()" style="flex:1 1 180px"><option value="">All events</option></select>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>#</th><th>Event</th><th>Name</th><th>Dept</th><th>Phone</th><th>Team</th><th>By</th><th></th></tr></thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG
+   1. SCRIPT_URL  = the Apps Script Web app URL (.../exec) you deployed.
+   2. SHEET_ID    = your Google Sheet ID (used only to load the event list
+                    for the dropdown). Optional — falls back to the list below.
+   ===================================================================== */
+const CONFIG = {
+  SCRIPT_URL: "",
+  SHEET_ID:   "",
+  EVENTS_TAB: "Events"
+};
+
+// fallback event list (used if SHEET_ID not set)
+const FALLBACK_EVENTS = ["Badminton","Carroms","Surprise Event","Treasure Hunt","Cycle Slow Race",
+ "IPL Fantasy League","Coconut Race","Raise the Ball","Kulam Kara","Fill the Bottle","Fruit Carving",
+ "3s Football QFs + SFs","Shoot Out Competition","3s Football Final + L.Finals","Tug of War - Men",
+ "Tug of War - Women","Uriyadi","The Perfect Slice","Musical Chair","Balloon the Pyramid",
+ "Onion Peeling","Quiz Challenge","Pookkalam","Photography"];
+
+let CRED = { user:"", pass:"" };
+let ROWS = [];
+
+function show(id){ document.getElementById(id).style.display='block'; }
+function hide(id){ document.getElementById(id).style.display='none'; }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function msg(id,text,ok){ const m=document.getElementById(id); m.textContent=text; m.className='msg '+(ok?'ok':'err'); }
+
+async function api(payload){
+  if(!CONFIG.SCRIPT_URL) throw new Error("SCRIPT_URL is not set in register.html");
+  const res = await fetch(CONFIG.SCRIPT_URL, {
+    method:"POST", redirect:"follow",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+async function login(){
+  const u=document.getElementById('u').value.trim();
+  const p=document.getElementById('p').value;
+  if(!u||!p){ msg('loginMsg','Enter username and password',false); return; }
+  msg('loginMsg','Checking…',true);
+  try{
+    const r=await api({action:'auth',user:u,pass:p});
+    if(r.ok){ CRED={user:u,pass:p};
+      sessionStorage.setItem('onam_cred',JSON.stringify(CRED));
+      enterApp();
+    } else { msg('loginMsg', r.error||'Invalid login', false); }
+  }catch(e){ msg('loginMsg','Cannot reach server — check SCRIPT_URL. '+e.message,false); }
+}
+
+function logout(){ CRED={user:"",pass:""}; sessionStorage.removeItem('onam_cred'); hide('appView'); show('loginView'); }
+
+function enterApp(){
+  hide('loginView'); show('appView');
+  document.getElementById('whoLabel').textContent='Logged in as '+CRED.user;
+  loadEvents(); loadList();
+}
+
+async function loadEvents(){
+  let names = FALLBACK_EVENTS.slice();
+  if(CONFIG.SHEET_ID){
+    try{
+      const url="https://docs.google.com/spreadsheets/d/"+CONFIG.SHEET_ID+
+        "/gviz/tq?tqx=out:json&headers=1&sheet="+encodeURIComponent(CONFIG.EVENTS_TAB)+"&t="+Date.now();
+      const txt=await (await fetch(url)).text();
+      const j=JSON.parse(txt.substring(txt.indexOf("{"),txt.lastIndexOf("}")+1));
+      const cols=j.table.cols.map(c=>c.label);
+      const ei=cols.findIndex(c=>String(c).trim().toLowerCase()==='events');
+      if(ei>=0){ names=j.table.rows.map(r=>r.c[ei]?(r.c[ei].f||r.c[ei].v):'').filter(Boolean); }
+    }catch(e){ /* keep fallback */ }
+  }
+  const sel=document.getElementById('f_event');
+  const fil=document.getElementById('filterEvent');
+  sel.innerHTML='<option value="">— select event —</option>'+names.map(n=>'<option>'+esc(n)+'</option>').join('');
+  fil.innerHTML='<option value="">All events</option>'+names.map(n=>'<option>'+esc(n)+'</option>').join('');
+}
+
+async function addParticipant(){
+  const p={
+    event:document.getElementById('f_event').value,
+    team:document.getElementById('f_team').value,
+    name:document.getElementById('f_name').value.trim(),
+    dept:document.getElementById('f_dept').value.trim(),
+    phone:document.getElementById('f_phone').value.trim(),
+    gender:document.getElementById('f_gender').value,
+    notes:document.getElementById('f_notes').value.trim()
+  };
+  if(!p.event||!p.name){ msg('addMsg','Event and name are required',false); return; }
+  msg('addMsg','Saving…',true);
+  try{
+    const r=await api({action:'add',user:CRED.user,pass:CRED.pass,p:p});
+    if(r.ok){ ROWS=r.rows||[]; renderList();
+      msg('addMsg','✅ Saved: '+p.name+' → '+p.event,true);
+      ['f_name','f_dept','f_phone','f_notes'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('f_name').focus();
+    } else { msg('addMsg', r.error||'Could not save', false); }
+  }catch(e){ msg('addMsg','Error: '+e.message,false); }
+}
+
+async function loadList(){
+  try{ const r=await api({action:'list'}); ROWS=r.rows||[]; renderList(); }
+  catch(e){ /* ignore */ }
+}
+
+function renderList(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const fe=document.getElementById('filterEvent').value;
+  const rows=ROWS.filter(r=>{
+    if(fe && r.event!==fe) return false;
+    if(q){ const blob=(r.name+' '+r.dept+' '+r.phone+' '+r.team).toLowerCase(); if(blob.indexOf(q)<0) return false; }
+    return true;
+  });
+  document.getElementById('totalCount').textContent=rows.length+' shown / '+ROWS.length+' total';
+  const b=document.getElementById('listBody');
+  b.innerHTML = rows.length ? rows.map((r,i)=>
+    '<tr><td>'+(i+1)+'</td><td>'+esc(r.event)+'</td><td><b>'+esc(r.name)+'</b></td><td>'+esc(r.dept)+
+    '</td><td>'+esc(r.phone)+'</td><td>'+esc(r.team)+'</td><td>'+esc(r.addedBy)+
+    '</td><td><button class="del" onclick="del(\''+esc(r.id)+'\',\''+esc(r.name).replace(/\\'/g,"")+'\')">Delete</button></td></tr>'
+  ).join('') : '<tr><td colspan="8" style="text-align:center;color:#a07a3a;padding:18px">No registrations yet.</td></tr>';
+}
+
+async function del(id,name){
+  if(!confirm('Delete registration: '+name+'?')) return;
+  try{
+    const r=await api({action:'delete',user:CRED.user,pass:CRED.pass,rowId:id});
+    if(r.ok){ ROWS=r.rows||[]; renderList(); }
+    else alert(r.error||'Could not delete');
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+// keep session on refresh
+(function(){
+  const saved=sessionStorage.getItem('onam_cred');
+  if(saved){ try{ CRED=JSON.parse(saved); enterApp(); return; }catch(e){} }
+  show('loginView');
+})();
+</script>
+</body>
+</html>

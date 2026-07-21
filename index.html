@@ -126,6 +126,10 @@
   table.sc .rank{font-weight:800;color:var(--saffron)}
   table.sc .score{font-weight:800;color:var(--green)}
   .empty{color:#a07a3a;text-align:center;padding:22px;font-style:italic}
+  .regchip{display:inline-block;margin-top:8px;margin-left:6px;background:#e6f7ec;color:#0b7a3b;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700}
+  .partsec{margin-top:18px}
+  .parthd{font-weight:800;color:#7a4d00;margin-bottom:6px;font-size:16px}
+  .pcount{background:#fff0b3;color:#a1560a;border-radius:14px;padding:1px 9px;font-size:13px;margin-left:6px}
 
   footer{text-align:center;color:#a07a3a;font-size:13px;margin-top:34px}
 
@@ -194,7 +198,8 @@
   <div class="grid" id="eventGrid"></div>
 
   <footer>🌼 Onam Sports Fiesta 2026 · CAFS · Made with team spirit 🌼<br>
-    <small id="lastUpdated"></small></footer>
+    <small id="lastUpdated"></small><br>
+    <a href="register.html" style="color:#b98a3a;font-size:12px">🔐 Admin registration →</a></footer>
 </div>
 
 <!-- reusable modal -->
@@ -220,6 +225,7 @@ const CONFIG = {
   SHEET_ID: "",
   EVENTS_TAB: "Events",
   TEAMS_TAB:  "Teams & Scores",
+  PARTICIPANTS_TAB: "Participants",
   REFRESH_SECONDS: 30
 };
 
@@ -253,6 +259,12 @@ const SAMPLE_EVENTS=[
 ];
 const TEAM_HEADERS=["Team","Captain","Vice Captain","Total Points"];
 const SAMPLE_TEAMS=[["Team A","Arun","Vishnu","28"],["Team B","Manu","Kiran","22"],["Team C","Deepa","Meera","19"],["Team D","Roy","Sanjay","15"]];
+const SAMPLE_PARTS=[
+ {event:"Badminton",name:"Arun & Vishnu",dept:"Engineering",phone:"7012041423",team:"Team A"},
+ {event:"Badminton",name:"Manu & Kiran",dept:"F&B Service",phone:"8714110477",team:"Team B"},
+ {event:"Carroms",name:"Deepa & Meera",dept:"HR",phone:"",team:"Team C"},
+ {event:"Tug of War - Men",name:"Roy (Captain) + 6",dept:"Operations",phone:"",team:"Team A"}
+];
 const SAMPLE_SC={headers:["Team","Members","Score","Rank"],rows:[["Team A","Arun, Vishnu","2","1"],["Team B","Manu, Kiran","1","2"],["Team C","Deepa, Meera","0","3"]]};
 
 /* ---------- helpers ---------- */
@@ -278,15 +290,26 @@ async function fetchTab(tab){
   return {headers,rows};
 }
 
-let EVENTS=[], lastTeams={headers:TEAM_HEADERS,rows:[]}, scCache={};
+let EVENTS=[], lastTeams={headers:TEAM_HEADERS,rows:[]}, scCache={}, PARTS={};
 let openState={type:null,no:null};
+
+function groupParts(list){ const m={}; list.forEach(p=>{ (m[p.event]=m[p.event]||[]).push(p); }); return m; }
+function partsFromTab(p){
+  const c={ev:idx(p.headers,"Event"),nm:idx(p.headers,"Name"),dp:idx(p.headers,"Department"),ph:idx(p.headers,"Phone"),tm:idx(p.headers,"Team")};
+  const g=(r,i)=>i>=0&&r[i]!=null?String(r[i]).trim():"";
+  const list=p.rows.filter(r=>g(r,c.ev)&&g(r,c.nm)).map(r=>({event:g(r,c.ev),name:g(r,c.nm),dept:g(r,c.dp),phone:g(r,c.ph),team:g(r,c.tm)}));
+  return groupParts(list);
+}
 
 async function loadAll(){
   const st=document.getElementById("statusText");
   try{
     let ev, teams, live;
-    if(!CONFIG.SHEET_ID){ ev={headers:EV_HEADERS,rows:SAMPLE_EVENTS}; teams={headers:TEAM_HEADERS,rows:SAMPLE_TEAMS}; live=false; }
-    else { [ev,teams]=await Promise.all([fetchTab(CONFIG.EVENTS_TAB),fetchTab(CONFIG.TEAMS_TAB)]); live=true; }
+    if(!CONFIG.SHEET_ID){ ev={headers:EV_HEADERS,rows:SAMPLE_EVENTS}; teams={headers:TEAM_HEADERS,rows:SAMPLE_TEAMS}; live=false; PARTS=groupParts(SAMPLE_PARTS); }
+    else {
+      [ev,teams]=await Promise.all([fetchTab(CONFIG.EVENTS_TAB),fetchTab(CONFIG.TEAMS_TAB)]); live=true;
+      try{ PARTS=partsFromTab(await fetchTab(CONFIG.PARTICIPANTS_TAB)); }catch(e){ PARTS={}; }
+    }
     parseEvents(ev.headers,ev.rows);
     lastTeams=teams;
     renderEvents();
@@ -329,6 +352,7 @@ function renderEvents(){
     h+='<div><span class="k">👥 Team</span> '+esc(e.pt)+'</div>';
     h+='<div><span class="k">🏅 Points</span> <span class="pts">'+esc(e.pts)+'</span></div></div>';
     h+='<div class="tag">'+esc(e.pm)+'</div>';
+    h+='<span class="regchip">👤 '+((PARTS[e.ev]||[]).length)+' registered</span>';
     if(hasWin){ h+='<div class="winners"><b>🏆 Winners</b>';
       if(e.w1)h+='<div class="w">🥇 '+esc(e.w1)+'</div>';
       if(e.w2)h+='<div class="w">🥈 '+esc(e.w2)+'</div>';
@@ -394,15 +418,25 @@ async function openScorecard(no,isRefresh){
   // fetch scorecard tab
   let data;
   if(!CONFIG.SHEET_ID){ data=SAMPLE_SC; }
-  else if(!e.scoreTab){ body.innerHTML=head+'<div class="empty">Detailed scorecard will be available soon.</div>'; return; }
+  else if(!e.scoreTab){ body.innerHTML=head+'<div class="empty">Detailed scorecard will be available soon.</div>'+renderParts(e.ev); return; }
   else {
     try{
       if(scCache[e.scoreTab]) data=scCache[e.scoreTab];
       else { data=await fetchTab(e.scoreTab); scCache[e.scoreTab]=data; }
-    }catch(err){ body.innerHTML=head+'<div class="empty">Scorecard sheet not found ('+esc(e.scoreTab)+').</div>'; return; }
+    }catch(err){ body.innerHTML=head+'<div class="empty">Scorecard sheet not found ('+esc(e.scoreTab)+').</div>'+renderParts(e.ev); return; }
   }
   if(openState.type!=="score"||openState.no!=no) return; // modal changed while loading
-  body.innerHTML=head+renderScTable(data);
+  body.innerHTML=head+renderScTable(data)+renderParts(e.ev);
+}
+
+function renderParts(ev){
+  const list=PARTS[ev]||[];
+  let h='<div class="partsec"><div class="parthd">👥 Registered Participants <span class="pcount">'+list.length+'</span></div>';
+  if(!list.length){ return h+'<div class="empty">No participants registered yet.</div></div>'; }
+  h+='<table class="sc"><thead><tr><th>#</th><th>Name</th><th>Dept</th><th>Team</th></tr></thead><tbody>';
+  list.forEach((p,i)=>{ h+='<tr><td>'+(i+1)+'</td><td><b>'+esc(p.name)+'</b></td><td>'+esc(p.dept)+'</td><td>'+esc(p.team)+'</td></tr>'; });
+  h+='</tbody></table></div>';
+  return h;
 }
 
 function renderScTable(d){
