@@ -134,7 +134,7 @@
   .pill.done{background:#e6f7ec;color:#0b7a3b} .pill.sched{background:#fff0b3;color:#a1560a}
   #teamside{margin:8px auto 16px}
   .tshead{background:linear-gradient(90deg,var(--red),var(--saffron),var(--green));color:#fff;
-    border-radius:12px;padding:11px 12px;font-weight:800;font-size:12.5px;letter-spacing:.4px;
+    border-radius:12px;padding:11px 10px;font-weight:800;font-size:10.5px;letter-spacing:0;
     text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:14px;
     box-shadow:var(--shadow)}
   .tsinner{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
@@ -144,7 +144,22 @@
   .tsbox img{width:100%;border-radius:10px;display:block}
   .tsjoin{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:11px;
     background:var(--green);color:#fff;border-radius:24px;padding:9px;font-weight:700;font-size:14px}
+  /* mobile: single WhatsApp button that opens a popup of the group cards */
+  #waFab{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:460px;margin:4px auto 18px;
+    background:#25D366;color:#fff;border:none;border-radius:30px;padding:14px 18px;font-size:16px;font-weight:800;cursor:pointer;
+    box-shadow:0 8px 20px rgba(37,211,102,.45)}
+  #waFab:active{transform:scale(.98)}
+  #waOverlay{display:none}
+  #waOverlay.open{display:flex;position:fixed;inset:0;z-index:120;background:rgba(40,20,0,.55);
+    align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+  #waOverlay.open #teamside{position:relative;background:var(--card);border-radius:18px;max-width:480px;width:100%;
+    max-height:92vh;overflow:auto;padding:16px 14px;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+  .waClose{position:absolute;top:12px;right:12px;background:#eee;border:none;color:#7a4d00;width:30px;height:30px;
+    border-radius:50%;font-size:18px;cursor:pointer;z-index:3;line-height:1}
   @media(min-width:1740px){
+    #waFab{display:none}
+    #waOverlay{display:block}
+    .waClose{display:none}
     #teamside{position:fixed;left:16px;top:88px;width:300px;max-height:calc(100vh - 104px);overflow-y:auto;
       margin:0;z-index:50;background:rgba(255,247,230,.72);border-radius:16px;padding:14px 12px}
     #teamside .tsinner{grid-template-columns:1fr}
@@ -211,7 +226,10 @@
       <div class="nm">Mr. Manu B</div><a href="tel:8714110477">📞 8714110477</a></div>
   </div>
 
+  <button id="waFab" onclick="openWA()"><svg viewBox="0 0 32 32" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.1 1.6 5.9L4 29l8.3-1.6c1.7.9 3.6 1.4 5.7 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 22c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7.7.7-3.6-.2-.4C6.5 18.6 6 16.8 6 15c0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10-10 10zm5.5-7.5c-.3-.2-1.8-.9-2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1c-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1s0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5s0-.4 0-.6c0-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.5 1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5 4.5.7.3 1.2.5 1.7.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.2-.6-.4z"/></svg> Join your Team's WhatsApp Group</button>
+  <div id="waOverlay" onclick="if(event.target===this)closeWA()">
   <aside id="teamside">
+    <button class="waClose" onclick="closeWA()">×</button>
     <div class="tshead">CAFS ONOTSAVAM 2026 SPORTS GROUPS - WHATSAPP</div>
     <div class="tsinner">
       <a class="tsbox" href="https://chat.whatsapp.com/D9fOdxD56Ss4h542QVxxsw?s=qt&amp;p=a&amp;mlu=0&amp;ilr=0&amp;amv=3" target="_blank" rel="noopener"><img src="wa/thiruvonam-titans-qr.png" alt="Team Thiruvonam Titan's"><div class="tsjoin">Join group <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-7 5-9 10-9"/><path d="M11 6l5 4-5 4"/></svg></div></a>
@@ -224,6 +242,7 @@
       <a class="tsbox" href="https://chat.whatsapp.com/H1c44zh9sqY9e02hny2tmh?s=qt&amp;p=a&amp;ilr=4" target="_blank" rel="noopener"><img src="wa/kerala-vibes-qr.png" alt="Kerala vibes"><div class="tsjoin">Join group <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-7 5-9 10-9"/><path d="M11 6l5 4-5 4"/></svg></div></a>
     </div>
   </aside>
+  </div>
 
   <div class="section-title"><span>🏆 Event Schedule</span></div>
   <div class="status"><span class="dot"></span><span id="statusText">Loading…</span>
@@ -445,6 +464,8 @@ function updateLeadPill(){
 
 /* ---------- modals ---------- */
 function closeModal(){ document.getElementById("overlay").classList.remove("open"); openState={type:null,no:null}; }
+function openWA(){ document.getElementById("waOverlay").classList.add("open"); }
+function closeWA(){ document.getElementById("waOverlay").classList.remove("open"); }
 function refreshOpenModal(){
   if(openState.type==="teams") renderTeamsModal();
   else if(openState.type==="score") openScorecard(openState.no,true);
@@ -538,7 +559,7 @@ function renderScTable(d){
   return h;
 }
 
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); closeWA(); } });
 window.addEventListener("storage",e=>{ if(e.key===DB_KEY) loadAll(); });  // live sync from admin page (demo mode)
 document.getElementById("pageQr").src=qr(location.href,200);
 loadAll();
