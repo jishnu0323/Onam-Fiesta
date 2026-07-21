@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CAFS Onotsavam 2026 — Poster</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{ size:A4 portrait; margin:0; }
+  :root{--saffron:#ff6a00;--marigold:#ff8c00;--red:#d7263d;--green:#0b7a3b;--gold:#f4b400;--ink:#3a2600;--cream:#fff7e6}
+  html,body{width:210mm;height:297mm;font-family:"Segoe UI",Arial,sans-serif;color:var(--ink)}
+  .page{position:relative;width:210mm;height:297mm;overflow:hidden;
+    background:radial-gradient(circle at 50% 12%,#fff6e2 0,#ffedcf 55%,#ffe0c2 100%);}
+
+  /* festive side image bands */
+  .side{position:absolute;top:0;bottom:0;width:24mm;background:url("bg.jpg") center/cover no-repeat;}
+  .side.left{left:0;} .side.right{right:0;transform:scaleX(-1);}
+  .side::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(215,38,61,.25),rgba(11,122,59,.25));}
+  .sideborder{position:absolute;top:0;bottom:0;width:5mm;background:repeating-linear-gradient(180deg,
+     var(--red) 0 8mm,var(--marigold) 8mm 16mm,var(--green) 16mm 24mm,var(--gold) 24mm 32mm);}
+  .sideborder.l{left:24mm;} .sideborder.r{right:24mm;}
+
+  .content{position:absolute;left:34mm;right:34mm;top:0;bottom:24mm;padding:8mm 8mm 0;
+    display:flex;flex-direction:column;align-items:center;text-align:center;}
+
+  .crown{font-size:26px;letter-spacing:5px;margin-bottom:2mm}
+  .kicker{font-size:13px;font-weight:700;color:var(--green);letter-spacing:3px;text-transform:uppercase}
+  .title{font-size:44px;font-weight:900;line-height:1.02;margin:1.5mm 0;
+    background:linear-gradient(90deg,var(--red),var(--saffron),var(--green));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .subtitle{font-size:18px;font-weight:700;color:var(--saffron)}
+  .sub2{font-size:13px;color:#7a4d00;margin-top:1mm}
+
+  .qrpanel{margin-top:5mm;background:#fff;border:3px solid var(--gold);border-radius:7mm;
+    padding:4mm 5mm;box-shadow:0 5mm 12mm rgba(120,60,0,.18);width:98mm}
+  .scan{font-size:17px;font-weight:800;color:var(--green);margin-bottom:2mm}
+  .qr{width:56mm;height:56mm;display:block;margin:0 auto}
+  .url{margin-top:2mm;font-size:14px;font-weight:700;color:var(--saffron);word-break:break-all}
+  .arrow{font-size:20px;color:var(--red);margin-top:0}
+
+  .instr{margin-top:4mm;width:134mm;background:#fff8e8;border:2px solid var(--gold);border-radius:5mm;padding:3mm 6mm;text-align:left}
+  .instr b{color:var(--saffron);font-size:15px}
+  .instr ol{margin:1.5mm 0 0 5mm;font-size:12px;line-height:1.5}
+
+  .wanote{margin-top:3mm;width:134mm;background:var(--green);color:#fff;border-radius:5mm;padding:3mm 6mm;
+    font-size:12px;line-height:1.45}
+  .wanote b{color:#ffe9a8}
+
+  .contacts{margin-top:auto;margin-bottom:2.5mm;font-size:12px;color:#5a4a20;font-weight:600}
+
+  /* bottom Happy-Onam panorama band */
+  .panorama{position:absolute;left:0;right:0;bottom:0;height:26mm;
+    background:url("panorama.png") center/contain no-repeat #fff;
+    border-top:3px solid var(--gold)}
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="side left"></div><div class="sideborder l"></div>
+    <div class="side right"></div><div class="sideborder r"></div>
+
+    <div class="content">
+      <div class="crown">🌸🪔🐘🌺🚣🌼🌸</div>
+      <div class="kicker">CAFS presents</div>
+      <div class="title">CAFS ONOTSAVAM 2026</div>
+      <div class="subtitle">Onam Sports Fiesta 🏆</div>
+      <div class="sub2">Games · Fun · Team Spirit — Happy Onam!</div>
+
+      <div class="qrpanel">
+        <div class="scan">📱 Scan to open the Event Page</div>
+        <img class="qr" src="poster/qr-main.png" alt="Event page QR">
+        <div class="arrow">↓</div>
+        <div class="url">jishnu0323.github.io/Onam-Fiesta</div>
+      </div>
+
+      <div class="instr">
+        <b>How to use</b>
+        <ol>
+          <li>Open your phone <b>Camera</b> (or any QR scanner) and point it at the QR above.</li>
+          <li>Tap the link — the <b>CAFS Onotsavam 2026</b> page opens in your browser.</li>
+          <li>See all events, schedule, venues, live matches, scores &amp; winners — updated live.</li>
+          <li>Bookmark it and check back during the fest for <b>🔴 LIVE</b> updates.</li>
+        </ol>
+      </div>
+
+      <div class="wanote">
+        📲 <b>Join your Team's WhatsApp Group!</b> On the page, find the <b>“Join your Team WhatsApp Group”</b> section
+        and scan your team's QR (Team Thiruvonam Titan's, Gajaveerans, Pulikali Panthers, Onam Kombans, Maveli Squad,
+        Chenda Champions, Vallam Vikings) to stay updated.
+      </div>
+
+      <div class="contacts">Sports Committee — Anu Asok : 7012041423 &nbsp;•&nbsp; Manu B : 8714110477</div>
+    </div>
+
+    <div class="panorama"></div>
+  </div>
+</body>
+</html>
